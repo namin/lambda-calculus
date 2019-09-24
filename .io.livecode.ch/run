@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+cat .io.livecode.ch/header.txt $1 .io.livecode.ch/footer.txt >out.f
+if [ -s $2 ]
+then
+    mv $2 extra.f
+else
+    touch extra.f
+fi
+cat extra.f out.f >script.f
+
+./f script.f -t
