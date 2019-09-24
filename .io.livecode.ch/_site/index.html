@@ -26,8 +26,6 @@ snd = lambda p.p false;
 
 pred = lambda n.fst (n (lambda p.pair (snd p) (succ (snd p))) (pair zero zero));
 
-pred three;
-
 iszero = lambda n.n (lambda x.false) true;
 </div>
 
@@ -75,12 +73,20 @@ order full;
 r;
 </div>
 
-<div class="live" id="fixpoint_applicative" data-lib="defs factorial">
+<div class="live" id="fixpoint_applicative" data-lib="defs">
 order applicative;
 y = lambda fun.(lambda f.(f f)) (lambda f.fun (lambda x.(f f) x));
+
+dummy = lambda x.x;
+
+fct = lambda f.lambda n.if (iszero n) (lambda _.one) (lambda _.times n (f (pred n) dummy));
+
 yfct = y fct;
-r = yfct three;
+
+r = yfct2 three dummy;
+
 order full;
+
 r;
 </div>
 
