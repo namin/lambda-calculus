@@ -31,11 +31,66 @@ pred three;
 iszero = lambda n.n (lambda x.false) true;
 </div>
 
+<h2>Natural Numbers</h2>
+
 <div class="live" id="ex_plus23_full" data-lib="defs">
 order full;
+plus two three;
+</div>
+
+<div class="live" id="ex_plus23_applicative" data-lib="defs">
+order applicative;
 trace on;
 plus two three;
 trace off;
+</div>
+
+<div class="live" id="ex_plus23_normal" data-lib="defs">
+order normal;
+trace on;
+plus two three;
+trace off;
+</div>
+
+<h2>Factorial</h2>
+<div class="live norun" id="factorial" data-lib="defs">
+fct = lambda f.lambda n.if (iszero n) one (times n (f (pred n)));
+
+fct_direct = lambda n.n (lambda x.pair (plus (fst x) one) (times (snd x) plus (fst x) one)) (pair zero one);
+</div>
+
+<div class="live" id="ex_factorial" data-lib="factorial">
+order full;
+snd (fct_direct three);
+</div>
+
+<h2>Fixedpoint</h2>
+
+<div class="live" id="fixpoint_normal" data-lib="defs factorial">
+order normal;
+y = lambda f.(lambda x.f (x x)) (lambda x.f (x x));
+yfct = y fct;
+r = yfct three;
+order full;
+r
+</div>
+
+<div class="live" id="fixpoint_applicative" data-lib="defs factorial">
+order applicative;
+y = lambda fun.(lambda f.(f f)) (lambda f.fun (lambda x.(f f) x));
+yfct = y fct;
+r = yfct three;
+order full;
+r
+</div>
+
+<h2>Interesting Types</h2>
+<div class="live" id="ex_types" data-lib="">
+lambda x. x;
+
+lambda x.lambda f.f x;
+
+lambda x.lambda f.lambda g.g (f x);
 </div>
 
 {% endblock %}
