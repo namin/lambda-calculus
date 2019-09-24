@@ -7,98 +7,148 @@ open Support.Pervasive
 
 exception NoRuleApplies
 
-let rec isnumericval ctx t = match t with
-    TmZero(_) -> true
-  | TmSucc(_,t1) -> isnumericval ctx t1
-  | _ -> false
-
 let rec isval ctx t = match t with
-    TmTrue(_)  -> true
-  | TmFalse(_) -> true
-  | TmFloat _  -> true
-  | TmString _  -> true
-  | t when isnumericval ctx t  -> true
   | TmAbs(_,_,_) -> true
-  | TmRecord(_,fields) -> List.for_all (fun (l,ti) -> isval ctx ti) fields
   | _ -> false
 
-let rec eval1 ctx t = match t with
-    TmIf(_,TmTrue(_),t2,t3) ->
-      t2
-  | TmIf(_,TmFalse(_),t2,t3) ->
-      t3
-  | TmIf(fi,t1,t2,t3) ->
-      let t1' = eval1 ctx t1 in
-      TmIf(fi, t1', t2, t3)
+let maybe_trace_termSubstTop trace ctx x t2 t12 =
+  let r = termSubstTop t2 t12 in
+  (*
+  (if trace then
+     (pr "    ";
+      printtm_ATerm true (addbinding ctx x NameBind) t12;
+      pr "["; pr x; pr ":=";
+      printtm_ATerm true ctx t2;
+      pr "] =";
+      force_newline();
+      pr "    ";
+      printtm_ATerm true ctx r;
+      force_newline())); *)
+  r
+
+let rec eval1 trace order ctx t = match t with
   | TmVar(fi,n,_) ->
       (match getbinding fi ctx n with
           TmAbbBind(t) -> t 
         | _ -> raise NoRuleApplies)
-  | TmApp(fi,TmAbs(_,x,t12),v2) when isval ctx v2 ->
-      termSubstTop v2 t12
-  | TmApp(fi,v1,t2) when isval ctx v1 ->
-      let t2' = eval1 ctx t2 in
-      TmApp(fi, v1, t2')
-  | TmApp(fi,t1,t2) ->
-      let t1' = eval1 ctx t1 in
-      TmApp(fi, t1', t2)
-  | TmRecord(fi,fields) ->
-      let rec evalafield l = match l with 
-        [] -> raise NoRuleApplies
-      | (l,vi)::rest when isval ctx vi -> 
-          let rest' = evalafield rest in
-          (l,vi)::rest'
-      | (l,ti)::rest -> 
-          let ti' = eval1 ctx ti in
-          (l, ti')::rest
-      in let fields' = evalafield fields in
-      TmRecord(fi, fields')
-  | TmProj(fi, (TmRecord(_, fields) as v1), l) when isval ctx v1 ->
-      (try List.assoc l fields
-       with Not_found -> raise NoRuleApplies)
-  | TmProj(fi, t1, l) ->
-      let t1' = eval1 ctx t1 in
-      TmProj(fi, t1', l)
-  | TmTimesfloat(fi,TmFloat(_,f1),TmFloat(_,f2)) ->
-      TmFloat(fi, f1 *. f2)
-  | TmTimesfloat(fi,(TmFloat(_,f1) as t1),t2) ->
-      let t2' = eval1 ctx t2 in
-      TmTimesfloat(fi,t1,t2') 
-  | TmTimesfloat(fi,t1,t2) ->
-      let t1' = eval1 ctx t1 in
-      TmTimesfloat(fi,t1',t2) 
-  | TmSucc(fi,t1) ->
-      let t1' = eval1 ctx t1 in
-      TmSucc(fi, t1')
-  | TmPred(_,TmZero(_)) ->
-      TmZero(dummyinfo)
-  | TmPred(_,TmSucc(_,nv1)) when (isnumericval ctx nv1) ->
-      nv1
-  | TmPred(fi,t1) ->
-      let t1' = eval1 ctx t1 in
-      TmPred(fi, t1')
-  | TmIsZero(_,TmZero(_)) ->
-      TmTrue(dummyinfo)
-  | TmIsZero(_,TmSucc(_,nv1)) when (isnumericval ctx nv1) ->
-      TmFalse(dummyinfo)
-  | TmIsZero(fi,t1) ->
-      let t1' = eval1 ctx t1 in
-      TmIsZero(fi, t1')
-  | TmLet(fi,x,v1,t2) when isval ctx v1 ->
-      termSubstTop v1 t2 
-  | TmLet(fi,x,t1,t2) ->
-      let t1' = eval1 ctx t1 in
-      TmLet(fi, x, t1', t2) 
+  | TmApp(fi,t1,t2) when order=ApplicativeOrder ->
+      (match t1 with
+          TmAbs(_,x,t12) when isval ctx t2 ->
+            maybe_trace_termSubstTop trace ctx x t2 t12
+       | _ when isval ctx t1 -> TmApp(fi, t1, eval1 trace order ctx t2)
+       | _ -> TmApp(fi, eval1 trace order ctx t1, t2))
+  | TmApp(fi,t1,t2) when order=NormalOrder ->
+      (match t1 with
+       TmAbs(_,x,t12) -> maybe_trace_termSubstTop trace ctx x t2 t12
+       | _ -> TmApp(fi, eval1 trace order ctx t1, t2))
+  | TmApp(fi,t1,t2) when order=FullOrder ->
+     (match t1 with
+       TmAbs(_,x,t12) -> maybe_trace_termSubstTop trace ctx x t2 t12
+       | _ -> try TmApp(fi, eval1 trace order ctx t1, t2)
+              with NoRuleApplies -> TmApp(fi, t1, eval1 trace order ctx t2))
+  | TmAbs(e,x,t11) when order=FullOrder ->
+     TmAbs(e,x,eval1 trace order (addbinding ctx x NameBind) t11)
   | _ -> 
       raise NoRuleApplies
 
-let rec eval ctx t =
-  try let t' = eval1 ctx t
-      in eval ctx t'
+let rec eval trace order ctx t =
+  try let t' = eval1 trace order ctx t in
+    (if trace then (pr "--> "; printtm_ATerm true ctx t; force_newline()));
+    eval trace order ctx t'
   with NoRuleApplies -> t
 
-let evalbinding ctx b = match b with
+let evalbinding trace order ctx b = match b with
     TmAbbBind(t) ->
-      let t' = eval ctx t in 
+      let t' = eval trace order ctx t in 
       TmAbbBind(t')
   | bind -> bind
+
+(* ------------------------   TYPING  ------------------------ *)
+
+type constr = (ty * ty) list
+
+let emptyconstr = []
+let combineconstr = List.append
+
+let prconstr constr =
+  let pc (tyS,tyT) =
+    printty_Type false tyS; pr "="; printty_Type false tyT in
+  let rec f l = match l with
+      [] -> ()
+    | [c] -> pc c
+    | c::rest -> (pc c; pr ", "; f rest)
+  in 
+    pr "{"; f constr; pr "}"
+
+type nextuvar = NextUVar of string * uvargenerator
+and uvargenerator = unit -> nextuvar
+
+let uvargen =
+  let rec f n () = NextUVar("?X" ^ string_of_int n, f (n+1))
+  in f 0
+
+let rec recon ctx nextuvar t = match t with
+      TmVar(fi,i,_) ->
+      (match getbinding fi ctx i with
+         VarBind(tyT) -> (tyT, nextuvar, [])
+       | TmAbbBind(t') -> recon ctx nextuvar t')
+    | TmAbs(fi, x, t2) ->
+        let NextUVar(tyX,nextuvar') = nextuvar() in
+        let tyT1 = TyId(tyX) in
+        let ctx' = addbinding ctx x (VarBind(tyT1)) in
+        let (tyT2,nextuvar2,constr2) = recon ctx' nextuvar' t2 in
+        (TyArr(tyT1, tyT2), nextuvar2, constr2)
+    | TmApp(fi,t1,t2) ->
+        let (tyT1,nextuvar1,constr1) = recon ctx nextuvar t1 in
+        let (tyT2,nextuvar2,constr2) = recon ctx nextuvar1 t2 in
+        let NextUVar(tyX,nextuvar') = nextuvar2() in
+        let newconstr = [(tyT1,TyArr(tyT2,TyId(tyX)))] in
+        ((TyId(tyX)), nextuvar', 
+         List.concat [newconstr; constr1; constr2])
+
+let substinty tyX tyT tyS =
+  let rec f tyS = match tyS with
+      TyArr(tyS1,tyS2) -> TyArr(f tyS1, f tyS2)
+    | TyId(s) -> if s=tyX then tyT else TyId(s)
+  in f tyS
+
+let applysubst constr tyT =
+  List.fold_left
+    (fun tyS (TyId(tyX),tyC2) -> substinty tyX tyC2 tyS)
+    tyT (List.rev constr)
+
+let substinconstr tyX tyT constr =
+  List.map
+    (fun (tyS1,tyS2) ->
+       (substinty tyX tyT tyS1, substinty tyX tyT tyS2))
+    constr
+
+let occursin tyX tyT =
+  let rec o tyT = match tyT with
+      TyArr(tyT1,tyT2) -> o tyT1 || o tyT2
+    | TyId(s) -> (s=tyX)
+  in o tyT
+
+let unify fi ctx msg constr =
+  let rec u constr = match constr with
+      [] -> []
+    | (tyS,TyId(tyX)) :: rest ->
+        if tyS = TyId(tyX) then u rest
+        else if occursin tyX tyS then
+          error fi (msg ^ ": circular constraints")
+        else
+          List.append (u (substinconstr tyX tyS rest)) 
+                      [(TyId(tyX),tyS)]
+    | (TyId(tyX),tyT) :: rest ->
+        if tyT = TyId(tyX) then u rest
+        else if occursin tyX tyT then
+          error fi (msg ^ ": circular constraints")
+        else
+          List.append (u (substinconstr tyX tyT rest))
+                      [(TyId(tyX),tyT)]
+    | (TyArr(tyS1,tyS2),TyArr(tyT1,tyT2)) :: rest ->
+        u ((tyS1,tyT1) :: (tyS2,tyT2) :: rest)
+    | (tyS,tyT)::rest -> 
+        error fi "Unsolvable constraints"
+  in
+    u constr

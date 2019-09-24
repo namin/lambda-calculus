@@ -11,19 +11,15 @@ open Support.Error
 
 let reservedWords = [
   (* Keywords *)
-  ("if", fun i -> Parser.IF i);
-  ("then", fun i -> Parser.THEN i);
-  ("else", fun i -> Parser.ELSE i);
-  ("true", fun i -> Parser.TRUE i);
-  ("false", fun i -> Parser.FALSE i);
   ("lambda", fun i -> Parser.LAMBDA i);
-  ("timesfloat", fun i -> Parser.TIMESFLOAT i);
-  ("succ", fun i -> Parser.SUCC i);
-  ("pred", fun i -> Parser.PRED i);
-  ("iszero", fun i -> Parser.ISZERO i);
-  ("let", fun i -> Parser.LET i);
-  ("in", fun i -> Parser.IN i);
-  
+  ("order", fun i -> Parser.ORDER i);
+  ("full", fun i -> Parser.FULL_ORDER i);
+  ("normal", fun i -> Parser.NORMAL_ORDER i);
+  ("applicative", fun i -> Parser.APPLICATIVE_ORDER i);
+  ("trace", fun i -> Parser.TRACE i);
+  ("on", fun i -> Parser.ON i);
+  ("off", fun i -> Parser.OFF i);
+
   (* Symbols *)
   ("_", fun i -> Parser.USCORE i);
   ("'", fun i -> Parser.APOSTROPHE i);
@@ -120,8 +116,6 @@ in
       stringEnd := x+1
     end
 
-let getStr () = String.sub (!stringBuffer) 0 (!stringEnd)
-
 let extractLineno yytext offset =
   int_of_string (String.sub yytext offset (String.length yytext - offset))
 }
@@ -144,12 +138,6 @@ rule main = parse
 | "# line " ['0'-'9']+
     { lineno := extractLineno (text lexbuf) 7 - 1; getFile lexbuf }
 
-| ['0'-'9']+
-    { Parser.INTV{i=info lexbuf; v=int_of_string (text lexbuf)} }
-
-| ['0'-'9']+ '.' ['0'-'9']+
-    { Parser.FLOATV{i=info lexbuf; v=float_of_string (text lexbuf)} }
-
 | ['A'-'Z' 'a'-'z' '_']
   ['A'-'Z' 'a'-'z' '_' '0'-'9' '\'']*
     { createID (info lexbuf) (text lexbuf) }
@@ -164,8 +152,6 @@ rule main = parse
 | ['*' '#' '/' '!' '?' '^' '(' ')' '{' '}' '[' ']' '<' '>' '.' ';' '_' ','
    '=' '\'']
     { createID (info lexbuf) (text lexbuf) }
-
-| "\"" { resetStr(); startLex := info lexbuf; string lexbuf }
 
 | eof { Parser.EOF(info lexbuf) }
 
@@ -191,29 +177,5 @@ and getName = parse
 
 and finishName = parse
   '"' [^ '\n']* { main lexbuf }
-
-and string = parse
-  '"'  { Parser.STRINGV {i = !startLex; v=getStr()} }
-| '\\' { addStr(escaped lexbuf); string lexbuf }
-| '\n' { addStr '\n'; newline lexbuf; string lexbuf }
-| eof  { error (!startLex) "String not terminated" }
-| _    { addStr (Lexing.lexeme_char lexbuf 0); string lexbuf }
-
-and escaped = parse
-  'n'	 { '\n' }
-| 't'	 { '\t' }
-| '\\'	 { '\\' }
-| '"'    { '\034'  }
-| '\''	 { '\'' }
-| ['0'-'9']['0'-'9']['0'-'9']
-    {
-      let x = int_of_string(text lexbuf) in
-      if x > 255 then
-	error (info lexbuf) "Illegal character constant"
-      else
-	Char.chr x
-    }
-| [^ '"' '\\' 't' 'n' '\'']
-    { error (info lexbuf) "Illegal character constant" }
 
 (*  *)
