@@ -129,10 +129,12 @@ Command :
       { fun ctx -> ((Order($1,$2 ctx)),ctx) }
   | TRACE Switch
       { fun ctx -> ((Trace($1,$2 ctx)),ctx) }
-  | STEP INTV
-      { fun ctx -> ((Step($1, $2.v)),ctx) }
-  | STEP STAR
-      { fun ctx -> ((Step($1, -1)),ctx) }
+  | STEP OfStep
+      { fun ctx -> ((Step($1, $2 ctx)),ctx) }
+
+OfStep :
+  | STAR { fun ctx -> -1 }
+  | INTV { fun ctx -> $1.v }
 
 /* Order of Reduction */
 OfOrder :
