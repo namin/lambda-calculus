@@ -30,10 +30,12 @@ open Syntax
 %token <Support.Error.info> TRACE
 %token <Support.Error.info> ON
 %token <Support.Error.info> OFF
+%token <Support.Error.info> STEP
 
 /* Identifier and constant value tokens */
 %token <string Support.Error.withinfo> UCID  /* uppercase-initial */
 %token <string Support.Error.withinfo> LCID  /* lowercase/symbolic-initial */
+%token <int Support.Error.withinfo> INTV
 
 /* Symbolic tokens */
 %token <Support.Error.info> APOSTROPHE
@@ -127,7 +129,11 @@ Command :
       { fun ctx -> ((Order($1,$2 ctx)),ctx) }
   | TRACE Switch
       { fun ctx -> ((Trace($1,$2 ctx)),ctx) }
- 
+  | STEP INTV
+      { fun ctx -> ((Step($1, $2.v)),ctx) }
+  | STEP STAR
+      { fun ctx -> ((Step($1, -1)),ctx) }
+
 /* Order of Reduction */
 OfOrder :
   | FULL_ORDER        { fun ctx -> FullOrder }

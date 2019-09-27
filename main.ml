@@ -63,6 +63,8 @@ let order = ref (ApplicativeOrder)
 
 let trace = ref (false)
 
+let stepN = ref (-1)
+
 let findprintty fi ctx t = (
   let (tyT,nextuvar',constr') = recon ctx uvargen t in
   let constr'' =
@@ -75,15 +77,16 @@ let findprintty fi ctx t = (
 
 let rec process_command ctx cmd = match cmd with
   | Trace(fi, b) -> trace := b; ctx
+  | Step(fi, n) -> stepN := n; ctx
   | Order(fi, o) -> order := o; ctx
   | Eval(fi,t) -> 
-      let t' = eval (!trace) (!order) ctx t in
+      let t' = eval (!trace) (!stepN) (!order) ctx t in
       printtm_ATerm true ctx t';
       (if (!typing) then (findprintty fi ctx t'));
       force_newline();
       ctx
   | Bind(fi,x,bind) -> 
-      let bind' = evalbinding (!trace) (!order) ctx bind in
+      let bind' = evalbinding (!trace) (!stepN) (!order) ctx bind in
       addbinding ctx x bind'
   
 let process_file f ctx =

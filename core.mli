@@ -6,8 +6,8 @@
 open Syntax
 open Support.Error
 
-val eval : bool -> order -> context -> term -> term 
-val evalbinding : bool -> order -> context -> binding -> binding 
+val eval : bool -> int -> order -> context -> term -> term 
+val evalbinding : bool -> int -> order -> context -> binding -> binding 
 type constr
 type uvargenerator
 val uvargen : uvargenerator

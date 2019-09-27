@@ -25,6 +25,7 @@ type order =
 
 type command =
   | Trace of info * bool
+  | Step of info * int
   | Order of info * order
   | Eval of info * term
   | Bind of info * string * binding

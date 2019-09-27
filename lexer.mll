@@ -19,6 +19,7 @@ let reservedWords = [
   ("trace", fun i -> Parser.TRACE i);
   ("on", fun i -> Parser.ON i);
   ("off", fun i -> Parser.OFF i);
+  ("step", fun i -> Parser.STEP i);
 
   (* Symbols *)
   ("_", fun i -> Parser.USCORE i);
@@ -137,6 +138,9 @@ rule main = parse
 
 | "# line " ['0'-'9']+
     { lineno := extractLineno (text lexbuf) 7 - 1; getFile lexbuf }
+
+| ['0'-'9']+
+    { Parser.INTV{i=info lexbuf; v=int_of_string (text lexbuf)} }
 
 | ['A'-'Z' 'a'-'z' '_']
   ['A'-'Z' 'a'-'z' '_' '0'-'9' '\'']*

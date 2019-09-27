@@ -51,15 +51,16 @@ let rec eval1 trace order ctx t = match t with
   | _ -> 
       raise NoRuleApplies
 
-let rec eval trace order ctx t =
+let rec eval trace stepN order ctx t =
+  if stepN==0 then ((if trace then (pr "..."; force_newline())); t) else (
   try let t' = eval1 trace order ctx t in
     (if trace then (pr "--> "; printtm_ATerm true ctx t; force_newline()));
-    eval trace order ctx t'
-  with NoRuleApplies -> t
+    eval trace (stepN-1) order ctx t'
+  with NoRuleApplies -> t)
 
-let evalbinding trace order ctx b = match b with
+let evalbinding trace stepN order ctx b = match b with
     TmAbbBind(t) ->
-      let t' = eval trace order ctx t in 
+      let t' = eval trace stepN order ctx t in 
       TmAbbBind(t')
   | bind -> bind
 
