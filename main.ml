@@ -105,12 +105,12 @@ let repl begctx =
   let ctx = ref begctx in
   let is_done = ref false in
   while (not (!is_done)) do
-    let (rescmd,resctx) =
+    let (rescmd,_) =
       (try Parser.toplevel1 Lexer.main lexbuf with Parsing.Parse_error -> 
          error (Lexer.info lexbuf) "Parse error") (!ctx) in
     (match rescmd with
       None -> is_done := true
-    | Some c -> ctx := process_command resctx c);
+    | Some c -> ctx := process_command (!ctx) c);
     print_flush()
   done
 
