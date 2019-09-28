@@ -64,7 +64,7 @@ snd (fct_direct three);
 
 <h2>Fixedpoint</h2>
 
-<div class="live" id="fixpoint_step" data-lib="">
+<div class="live" id="fixedpoint_step" data-lib="">
 typing off;
 step 5;
 trace on;
@@ -75,7 +75,7 @@ order full;
 lambda f. (lambda x.f (x x)) (lambda x.f (x x));
 </div>
 
-<div class="live" id="fixpoint_normal" data-lib="defs factorial">
+<div class="live" id="fixedpoint_normal" data-lib="defs factorial">
 order normal;
 y = lambda f.(lambda x.f (x x)) (lambda x.f (x x));
 yfct = y fct;
@@ -84,7 +84,7 @@ order full;
 r;
 </div>
 
-<div class="live" id="fixpoint_applicative" data-lib="defs">
+<div class="live" id="fixedpoint_applicative" data-lib="defs">
 order applicative;
 y = lambda fun.(lambda f.(f f)) (lambda f.fun (lambda x.(f f) x));
 
