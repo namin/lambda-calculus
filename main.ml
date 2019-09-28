@@ -77,6 +77,7 @@ let findprintty fi ctx t = (
 
 let rec process_command ctx cmd = match cmd with
   | Trace(fi, b) -> trace := b; ctx
+  | Typing(fi, b) -> typing := b; ctx
   | Step(fi, n) -> stepN := n; ctx
   | Order(fi, o) -> order := o; ctx
   | Eval(fi,t) -> 

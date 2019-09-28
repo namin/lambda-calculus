@@ -28,6 +28,7 @@ open Syntax
 %token <Support.Error.info> NORMAL_ORDER
 %token <Support.Error.info> APPLICATIVE_ORDER
 %token <Support.Error.info> TRACE
+%token <Support.Error.info> TYPING
 %token <Support.Error.info> ON
 %token <Support.Error.info> OFF
 %token <Support.Error.info> STEP
@@ -129,6 +130,8 @@ Command :
       { fun ctx -> ((Order($1,$2 ctx)),ctx) }
   | TRACE Switch
       { fun ctx -> ((Trace($1,$2 ctx)),ctx) }
+  | TYPING Switch
+      { fun ctx -> ((Typing($1,$2 ctx)),ctx) }
   | STEP OfStep
       { fun ctx -> ((Step($1, $2 ctx)),ctx) }
 
