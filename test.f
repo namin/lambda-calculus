@@ -23,12 +23,12 @@ iszero = lambda n.n (lambda x.false) true;
 order full;
 plus two three;
 
-order applicative;
+order cbv;
 trace on;
 plus two three;
 trace off;
 
-order normal;
+order cbn;
 trace on;
 plus two three;
 trace off;
@@ -40,14 +40,14 @@ fct_direct = lambda n.n (lambda x.pair (plus (fst x) one) (times (snd x) plus (f
 order full;
 snd (fct_direct three);
 
-order normal;
+order cbn;
 y = lambda f.(lambda x.f (x x)) (lambda x.f (x x));
 yfct = y fct;
 r = yfct three;
 order full;
 r;
 
-order applicative;
+order cbv;
 yapp = lambda fun.(lambda f.(f f)) (lambda f.fun (lambda x.(f f) x));
 
 dummy = lambda x.x;
