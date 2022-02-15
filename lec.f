@@ -81,4 +81,6 @@ thetai = lambda t.lambda f.f (t t f);
 
 theta = thetai thetai;
 
+order cbn;
+
 theta factp;
