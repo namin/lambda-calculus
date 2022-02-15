@@ -7,6 +7,14 @@ open Support.Pervasive
 
 exception NoRuleApplies
 
+let rec expand ctx t = match t with
+  | TmVar(fi,n,_) ->
+     (match getbinding fi ctx n with
+        TmAbbBind(t) -> expand ctx t
+      | _ -> t)
+  | TmApp(fi,t1,t2) -> TmApp(fi,expand ctx t1,expand ctx t2)
+  | TmAbs(fi,x,t1) -> TmAbs(fi,x,expand (addbinding ctx x NameBind) t1)
+
 let rec isval ctx t = match t with
   | TmAbs(_,_,_) -> true
   | _ -> false
@@ -46,17 +54,20 @@ let rec eval1 trace order ctx t = match t with
        TmAbs(_,x,t12) -> maybe_trace_termSubstTop trace ctx x t2 t12
        | _ -> try TmApp(fi, eval1 trace order ctx t1, t2)
               with NoRuleApplies -> TmApp(fi, t1, eval1 trace order ctx t2))
-  | TmAbs(e,x,t11) when order=FullOrder or order=ApplicativeOrder or order=NormalOrder->
+  | TmAbs(e,x,t11) when order=FullOrder or order=ApplicativeOrder or order=NormalOrder ->
      TmAbs(e,x,eval1 trace order (addbinding ctx x NameBind) t11)
   | _ -> 
       raise NoRuleApplies
 
-let rec eval trace stepN order ctx t =
+let rec eval0 trace stepN order ctx t =
   if stepN==0 then ((if trace then (pr "..."; force_newline())); t) else (
   try let t' = eval1 trace order ctx t in
     (if trace then (pr "--> "; printtm_ATerm true ctx t; force_newline()));
-    eval trace (stepN-1) order ctx t'
+    eval0 trace (stepN-1) order ctx t'
   with NoRuleApplies -> t)
+
+let rec eval trace stepN order ctx t =
+  eval0 trace stepN order ctx (if order=NormalOrder then (expand ctx t) else t)
 
 let evalbinding trace stepN order ctx b = match b with
     TmAbbBind(t) ->
