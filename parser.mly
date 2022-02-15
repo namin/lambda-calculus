@@ -27,6 +27,8 @@ open Syntax
 %token <Support.Error.info> FULL_ORDER
 %token <Support.Error.info> NORMAL_ORDER
 %token <Support.Error.info> APPLICATIVE_ORDER
+%token <Support.Error.info> CBN_ORDER
+%token <Support.Error.info> CBV_ORDER
 %token <Support.Error.info> TRACE
 %token <Support.Error.info> TYPING
 %token <Support.Error.info> ON
@@ -144,6 +146,8 @@ OfOrder :
   | FULL_ORDER        { fun ctx -> FullOrder }
   | NORMAL_ORDER      { fun ctx -> NormalOrder }
   | APPLICATIVE_ORDER { fun ctx -> ApplicativeOrder }
+  | CBN_ORDER      { fun ctx -> CbnOrder }
+  | CBV_ORDER { fun ctx -> CbvOrder }
 
 /* Switch: On or Off (Boolean) */
 Switch :

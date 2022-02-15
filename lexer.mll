@@ -15,9 +15,9 @@ let reservedWords = [
   ("order", fun i -> Parser.ORDER i);
   ("full", fun i -> Parser.FULL_ORDER i);
   ("normal", fun i -> Parser.NORMAL_ORDER i);
-  ("cbn", fun i -> Parser.NORMAL_ORDER i);
+  ("cbn", fun i -> Parser.CBN_ORDER i);
   ("applicative", fun i -> Parser.APPLICATIVE_ORDER i);
-  ("cbv", fun i -> Parser.APPLICATIVE_ORDER i);
+  ("cbv", fun i -> Parser.CBV_ORDER i);
   ("trace", fun i -> Parser.TRACE i);
   ("typing", fun i -> Parser.TYPING i);
   ("on", fun i -> Parser.ON i);

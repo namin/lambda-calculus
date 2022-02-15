@@ -22,6 +22,8 @@ type order =
   | FullOrder
   | NormalOrder
   | ApplicativeOrder
+  | CbnOrder
+  | CbvOrder
 
 type command =
   | Trace of info * bool
