@@ -36,15 +36,15 @@ order full;
 plus two three;
 </div>
 
-<div class="live" id="ex_plus23_applicative" data-lib="defs">
-order applicative;
+<div class="live" id="ex_plus23_cbv" data-lib="defs">
+order cbv;
 trace on;
 plus two three;
 trace off;
 </div>
 
-<div class="live" id="ex_plus23_normal" data-lib="defs">
-order normal;
+<div class="live" id="ex_plus23_cbn" data-lib="defs">
+order cbn;
 trace on;
 plus two three;
 trace off;
@@ -75,8 +75,8 @@ order full;
 lambda f. (lambda x.f (x x)) (lambda x.f (x x));
 </div>
 
-<div class="live" id="fixedpoint_normal" data-lib="defs factorial">
-order normal;
+<div class="live" id="fixedpoint_cbn" data-lib="defs factorial">
+order cbn;
 y = lambda f.(lambda x.f (x x)) (lambda x.f (x x));
 yfct = y fct;
 r = yfct three;
@@ -84,8 +84,8 @@ order full;
 r;
 </div>
 
-<div class="live" id="fixedpoint_applicative" data-lib="defs">
-order applicative;
+<div class="live" id="fixedpoint_cbv" data-lib="defs">
+order cbv;
 y = lambda fun.(lambda f.(f f)) (lambda f.fun (lambda x.(f f) x));
 
 dummy = lambda x.x;
