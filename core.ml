@@ -37,11 +37,11 @@ let rec eval1 trace order ctx t = match t with
             maybe_trace_termSubstTop trace ctx x t2 t12
        | _ when isval ctx t1 -> TmApp(fi, t1, eval1 trace order ctx t2)
        | _ -> TmApp(fi, eval1 trace order ctx t1, t2))
-  | TmApp(fi,t1,t2) when order=NormalOrder or order=CbnOrder->
+  | TmApp(fi,t1,t2) when order=CbnOrder->
       (match t1 with
        TmAbs(_,x,t12) -> maybe_trace_termSubstTop trace ctx x t2 t12
        | _ -> TmApp(fi, eval1 trace order ctx t1, t2))
-  | TmApp(fi,t1,t2) when order=FullOrder ->
+  | TmApp(fi,t1,t2) when order=FullOrder or order=NormalOrder ->
      (match t1 with
        TmAbs(_,x,t12) -> maybe_trace_termSubstTop trace ctx x t2 t12
        | _ -> try TmApp(fi, eval1 trace order ctx t1, t2)
