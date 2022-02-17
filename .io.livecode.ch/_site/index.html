@@ -32,7 +32,7 @@ iszero = lambda n.n (lambda x.false) true;
 <h2>Natural Numbers</h2>
 
 <div class="live" id="ex_plus23_full" data-lib="defs">
-order full;
+order normal;
 plus two three;
 </div>
 
@@ -58,7 +58,7 @@ fct_direct = lambda n.n (lambda x.pair (plus (fst x) one) (times (snd x) plus (f
 </div>
 
 <div class="live" id="ex_factorial" data-lib="defs factorial">
-order full;
+order normal;
 snd (fct_direct three);
 </div>
 
@@ -71,7 +71,7 @@ trace on;
 
 (lambda x. x x) (lambda x. x x);
 
-order full;
+order normal;
 lambda f. (lambda x.f (x x)) (lambda x.f (x x));
 </div>
 
@@ -80,7 +80,7 @@ order cbn;
 y = lambda f.(lambda x.f (x x)) (lambda x.f (x x));
 yfct = y fct;
 r = yfct three;
-order full;
+order normal;
 r;
 </div>
 
@@ -96,7 +96,7 @@ yfct = y fct;
 
 r = yfct three dummy;
 
-order full;
+order normal;
 
 r;
 </div>
