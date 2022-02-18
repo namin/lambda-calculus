@@ -1,3 +1,5 @@
+order normal;
+
 true = lambda x.lambda y.x;
 false = lambda x.lambda y.y;
 if = lambda b.lambda t.lambda f.b t f;
@@ -6,7 +8,6 @@ and = lambda b1.lambda b2.b1 b2 false;
 or = lambda b1.lambda b2.b1 true b2;
 
 and true false;
-
 and true (not true);
 
 zero = lambda f.lambda x.x;
@@ -15,7 +16,6 @@ two = lambda f.lambda x.f (f x);
 three = lambda f.lambda x.f (f (f x));
 succ = lambda n.lambda f.lambda x.f (n f x);
 
-order full;
 succ two;
 
 add = lambda n1.lambda n2.n1 succ n2;
@@ -50,7 +50,7 @@ fact = facti facti;
 
 fact3 = fact three;
 
-order full;
+order normal;
 fact3;
 
 order cbn;
@@ -84,3 +84,7 @@ theta = thetai thetai;
 order cbn;
 
 theta factp;
+
+order normal;
+
+theta factp three;
