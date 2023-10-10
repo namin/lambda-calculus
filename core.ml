@@ -39,7 +39,7 @@ let rec eval1 trace order ctx t = match t with
       (match getbinding fi ctx n with
           TmAbbBind(t) -> t 
         | _ -> raise NoRuleApplies)
-  | TmApp(fi,t1,t2) when order=ApplicativeOrder or order=CbvOrder->
+  | TmApp(fi,t1,t2) when order=ApplicativeOrder || order=CbvOrder->
       (match t1 with
           TmAbs(_,x,t12) when isval ctx t2 ->
             maybe_trace_termSubstTop trace ctx x t2 t12
@@ -49,12 +49,12 @@ let rec eval1 trace order ctx t = match t with
       (match t1 with
        TmAbs(_,x,t12) -> maybe_trace_termSubstTop trace ctx x t2 t12
        | _ -> TmApp(fi, eval1 trace order ctx t1, t2))
-  | TmApp(fi,t1,t2) when order=FullOrder or order=NormalOrder ->
+  | TmApp(fi,t1,t2) when order=FullOrder || order=NormalOrder ->
      (match t1 with
        TmAbs(_,x,t12) -> maybe_trace_termSubstTop trace ctx x t2 t12
        | _ -> try TmApp(fi, eval1 trace order ctx t1, t2)
               with NoRuleApplies -> TmApp(fi, t1, eval1 trace order ctx t2))
-  | TmAbs(e,x,t11) when order=FullOrder or order=ApplicativeOrder or order=NormalOrder ->
+  | TmAbs(e,x,t11) when order=FullOrder || order=ApplicativeOrder || order=NormalOrder ->
      TmAbs(e,x,eval1 trace order (addbinding ctx x NameBind) t11)
   | _ -> 
       raise NoRuleApplies
