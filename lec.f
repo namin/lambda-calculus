@@ -74,8 +74,12 @@ step *;
 
 order cbv;
 z = lambda f.(lambda x.f (lambda y.x x y)) (lambda x.f (lambda y.x x y));
+dummy = lambda x.x;
+factv = lambda f.lambda n.if (iszero n) (lambda _.one) (lambda _.(times n (f (pred n) dummy)));
 
-z factp;
+z factv;
+
+z factv three;
 
 thetai = lambda t.lambda f.f (t t f);
 
